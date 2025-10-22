@@ -1,0 +1,68 @@
+# ==============================
+# Core NLP and Transformers
+# ==============================
+transformers
+transformers[sentencepiece]
+datasets
+sacrebleu
+rouge_score
+sentencepiece
+
+# ==============================
+# Data & Utilities
+# ==============================
+pandas
+numpy
+nltk
+tqdm
+PyYAML
+python-box
+ensure
+py7zr
+
+# ==============================
+# Visualization
+# ==============================
+matplotlib
+seaborn
+
+# ==============================
+# Deep Learning
+# ==============================
+torch
+torchvision
+
+# ==============================
+# Cloud & Storage
+# ==============================
+boto3
+mypy-boto3-s3
+
+# ==============================
+# Web & Serving
+# ==============================
+fastapi
+uvicorn
+Jinja2
+
+# ==============================
+# Experiment Tracking / MLOps
+# ==============================
+mlflow
+dvc
+dvc[s3]
+
+# ==============================
+# Development & Testing
+# ==============================
+pytest
+flake8
+black
+isort
+mypy
+notebook
+
+# ==============================
+# Editable install (local dev mode)
+# ==============================
+-e .

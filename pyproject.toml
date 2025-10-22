@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "textSummarizer"
+version = "0.0.1"
+description = "A modern NLP text summarization package with MLOps best practices"
+readme = "README.md"
+authors = [
+    { name = "Md. Ashaduzzaman Sarker", email = "ashaduzzaman2505@gmail.com" }
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "transformers",
+    "transformers[sentencepiece]",
+    "datasets",
+    "sacrebleu",
+    "rouge_score",
+    "py7zr",
+    "pandas",
+    "nltk",
+    "tqdm",
+    "PyYAML",
+    "matplotlib",
+    "torch",
+    "notebook",
+    "boto3",
+    "mypy-boto3-s3",
+    "python-box",
+    "ensure",
+    "fastapi",
+    "uvicorn",
+    "Jinja2",
+]
+
+[project.urls]
+Homepage = "https://github.com/ashaduzzaman-sarker/MLOps_Template"
+"Bug Tracker" = "https://github.com/ashaduzzaman-sarker/MLOps_Template/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
