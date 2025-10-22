@@ -32,7 +32,7 @@ logging.basicConfig(
 # -----------------------------------------------------------------------------
 # Project Name (customizable)
 # -----------------------------------------------------------------------------
-PROJECT_NAME = "text_summarizer"
+PROJECT_NAME = "textSummarizer"
 
 # -----------------------------------------------------------------------------
 # Files & Directories to Create

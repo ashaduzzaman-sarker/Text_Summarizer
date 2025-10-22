@@ -26,6 +26,7 @@ dependencies = [
     "pandas",
     "nltk",
     "tqdm",
+    "joblib",
     "PyYAML",
     "matplotlib",
     "torch",
