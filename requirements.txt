@@ -7,6 +7,10 @@ datasets
 sacrebleu
 rouge_score
 sentencepiece
+huggingface-hub
+requests
+kaggle
+pyarrow
 
 # ==============================
 # Data & Utilities
