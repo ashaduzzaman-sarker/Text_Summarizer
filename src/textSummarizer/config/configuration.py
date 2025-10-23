@@ -1,3 +1,6 @@
+# ============================================================================
+# src/textSummarizer/entity/config_entity.py
+# ============================================================================
 from textSummarizer.constants.constants import *
 from textSummarizer.utils.common import read_yaml, create_directories
 from textSummarizer.entity.config_entity import DataIngestionConfig

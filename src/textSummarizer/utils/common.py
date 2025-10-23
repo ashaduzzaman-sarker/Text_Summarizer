@@ -1,4 +1,6 @@
+# ============================================================================
 # src/textSummarizer/utils/common.py
+# ============================================================================
 import os
 import json
 import joblib
@@ -39,11 +41,11 @@ def read_yaml(path_to_yaml: Path) -> ConfigBox:
 
 
 @ensure_annotations
-def create_directories(path_to_directories: List[Path], verbose: bool = True):
+def create_directories(path_to_directories: list, verbose: bool = True):
     """Create list of directories
     
     Args:
-        path_to_directories (List[Path]): list of paths of directories
+        path_to_directories (list): list of paths of directories
         verbose (bool, optional): log directory creation. Defaults to True.
     """
     for path in path_to_directories:

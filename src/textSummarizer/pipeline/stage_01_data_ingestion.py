@@ -1,3 +1,6 @@
+# ============================================================================
+# src/textSummarizer/pipeline/stage_01_data_ingestion.py
+# ============================================================================
 from textSummarizer.config.configuration import ConfigurationManager
 from textSummarizer.components.data_ingestion import DataIngestion
 from textSummarizer.logging.logger import logger
