@@ -25,9 +25,34 @@ logging.basicConfig(
 
 logger = logging.getLogger("textSummarizerLogger")
 
-## Example Usage
-# from textSummarizer.logging import logger
 
-## Basic logging (your current usage)
-# logger.info("Starting data ingestion")
-# logger.warning("Model file not found, downloading...")
+# Optional: Utility function to log exceptions
+def log_exception(exc: Exception, context: str = ""):
+    """Log exception with context"""
+    if context:
+        logger.error(f"{context}: {str(exc)}", exc_info=True)
+    else:
+        logger.error(str(exc), exc_info=True)
+
+
+# Optional: Context manager for logging function execution
+class LogExecutionTime:
+    """Context manager to log execution time of code blocks"""
+    def __init__(self, operation_name: str):
+        self.operation_name = operation_name
+        self.start_time = None
+    
+    def __enter__(self):
+        import time
+        self.start_time = time.time()
+        logger.info(f"Starting: {self.operation_name}")
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        import time
+        elapsed = time.time() - self.start_time
+        if exc_type is None:
+            logger.info(f"Completed: {self.operation_name} (took {elapsed:.2f}s)")
+        else:
+            logger.error(f"Failed: {self.operation_name} (took {elapsed:.2f}s)")
+        return False
