@@ -7,10 +7,7 @@ datasets
 sacrebleu
 rouge_score
 sentencepiece
-huggingface-hub
-requests
-kaggle
-pyarrow
+
 
 # ==============================
 # Data & Utilities
@@ -23,6 +20,10 @@ PyYAML
 python-box
 ensure
 py7zr
+huggingface_hub[hf_xet]
+requests
+kaggle
+pyarrow
 
 # ==============================
 # Visualization
