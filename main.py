@@ -6,6 +6,7 @@
 from textSummarizer.pipeline.stage_01_data_ingestion import DataIngestionPipeline
 from textSummarizer.pipeline.stage_02_data_validation import DataValidationPipeline
 from textSummarizer.pipeline.stage_03_data_transformation import DataTransformationPipeline
+from textSummarizer.pipeline.stage_04_model_trainer import ModelTrainerPipeline
 from textSummarizer.logging.logger import logger
 
 
@@ -33,14 +34,24 @@ if __name__ == "__main__":
     #     logger.error("Data Validation failed")
     #     raise
     
-    # Stage 3: Data Transformation
+    # # Stage 3: Data Transformation
+    # try:
+    #     logger.info("=" * 60)
+    #     pipeline = DataTransformationPipeline()
+    #     pipeline.run()
+    # except Exception as e:
+    #     logger.error("Data Transformation failed")
+    #     raise
+    
+    # Stage 4: Model Training
     try:
         logger.info("=" * 60)
-        pipeline = DataTransformationPipeline()
+        pipeline = ModelTrainerPipeline()
         pipeline.run()
     except Exception as e:
-        logger.error("Data Transformation failed")
+        logger.error("Model Training failed")
         raise
     
     logger.info("=" * 60)
     logger.info("All pipeline stages completed successfully!")
+    logger.info("Trained model available at: artifacts/model_trainer/final_model")

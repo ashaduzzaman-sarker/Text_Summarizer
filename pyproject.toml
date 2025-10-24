@@ -34,6 +34,8 @@ dependencies = [
     "PyYAML",
     "matplotlib",
     "torch",
+    "tensorboard",
+    "accelerate",
     "notebook",
     "boto3",
     "mypy-boto3-s3",

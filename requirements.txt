@@ -22,7 +22,7 @@ ensure
 py7zr
 huggingface_hub[hf_xet]
 requests
-kaggle
+accelerate
 pyarrow
 
 # ==============================
@@ -30,6 +30,7 @@ pyarrow
 # ==============================
 matplotlib
 seaborn
+tensorboard
 
 # ==============================
 # Deep Learning

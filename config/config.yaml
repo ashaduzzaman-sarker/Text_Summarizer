@@ -10,21 +10,29 @@ data_ingestion:
   dataset_name: abisee/cnn_dailymail
   config_name: "3.0.0" # null | Optional: for datasets with multiple configs
   split: train
-  max_samples: null  # Set to number (e.g., 100) for testing with subset
-  #hf_streaming: false  # Set true for large datasets
+  max_samples: 10 # null  # Set to number (e.g., 100) for testing with subset
+  # hf_streaming: false  # Set true for large datasets
 
 data_validation:
   root_dir: artifacts/data_validation
   status_file: artifacts/data_validation/status.txt
   data_dir: artifacts/data_ingestion/dataset  # Where ingested data is stored
   required_columns: ["article", "highlights"]  # Required dataset columns
-  min_samples: 100  # Minimum number of samples expected
+  min_samples: 100  # 1000, Minimum number of samples expected
 
 data_transformation:
   root_dir: artifacts/data_transformation
   data_dir: artifacts/data_ingestion/dataset  # Input: validated dataset
-  tokenizer_name: facebook/bart-base  # Pretrained tokenizer- facebook/bart-large-cnn
+  tokenizer_name: facebook/bart-large-cnn # Pretrained tokenizer- facebook/bart-large-cnn
   max_input_length: 1024  # Max tokens for article
   max_target_length: 128  # Max tokens for summary
   padding: max_length  # Padding strategy: max_length, longest, do_not_pad
-  batch_size: 100  # 1000 Batch size for map operations
+  batch_size: 1000  # 1000 Batch size for map operations
+
+model_trainer:
+  root_dir: artifacts/model_trainer
+  data_dir: artifacts/data_transformation/tokenized_dataset
+  tokenizer_dir: artifacts/data_transformation/tokenizer
+  model_name: facebook/bart-large-cnn
+  train_split: 0.9  # 90% train, 10% validation
+  seed: 42

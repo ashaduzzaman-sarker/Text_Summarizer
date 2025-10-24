@@ -39,3 +39,14 @@ class DataTransformationConfig:
     max_target_length: int
     padding: Literal["max_length", "longest", "do_not_pad"]
     batch_size: int
+
+
+@dataclass(frozen=True)
+class ModelTrainerConfig:
+    """Configuration for model training stage."""
+    root_dir: Path
+    data_dir: Path
+    tokenizer_dir: Path
+    model_name: str
+    train_split: float
+    seed: int
