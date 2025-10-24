@@ -1,38 +1,14 @@
+# ============================================================================
+# config/config.yaml
+# ============================================================================
+
 artifacts_root: artifacts
 
 data_ingestion:
   root_dir: artifacts/data_ingestion
-  source_type: huggingface  # Options: huggingface, kaggle, url
-  
-  # HuggingFace configuration
-  hf_dataset_name: "abisee/cnn_dailymail"
-  hf_config_name: "3.0.0" # null  # Optional: for datasets with multiple configs
-  hf_streaming: false  # Set true for large datasets
-  
-  # Kaggle configuration
-  kaggle_dataset: "username/dataset-name"
-  kaggle_file: null  # Optional: specific file to download
-  
-  # URL configuration
-  source_url: "https://example.com/data.zip"
-  
-  # Common settings
-  output_format: "arrow"  # arrow, parquet, csv, json
   cache_dir: artifacts/data_ingestion/cache
-  max_samples: null  # Limit samples for testing 100
-
-
-# ============================================================================
-# config/config.yaml
-# ============================================================================
-# artifacts_root: artifacts
-
-# data_ingestion:
-#   root_dir: artifacts/data_ingestion
-#   source_URL: https://github.com/ashaduzzaman-sarker/xsum.zip 
-#   local_data_file: artifacts/data_ingestion/data.zip
-#   unzip_dir: artifacts/data_ingestion
-#   # HuggingFace dataset config
-#   dataset_name: "abisee/cnn_dailymail"  # or "cnn_dailymail", "xsum", etc.
-#   dataset_split: "train"  # train, validation, test
-#   use_huggingface: false  # Set to true to use HuggingFace datasets
+  dataset_name: abisee/cnn_dailymail
+  config_name: "3.0.0" # null | Optional: for datasets with multiple configs
+  split: train
+  max_samples: null  # Set to number (e.g., 100) for testing with subset
+  #hf_streaming: false  # Set true for large datasets
