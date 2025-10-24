@@ -6,7 +6,11 @@
 from pathlib import Path
 from textSummarizer.constants.constants import CONFIG_FILE_PATH
 from textSummarizer.utils.common import read_yaml, create_directories
-from textSummarizer.entity.config_entity import DataIngestionConfig
+from textSummarizer.entity.config_entity import (
+    DataIngestionConfig,
+    DataValidationConfig,
+    DataTransformationConfig
+)
 
 
 class ConfigurationManager:
@@ -22,14 +26,8 @@ class ConfigurationManager:
         create_directories([Path(self.config.artifacts_root)])
     
     def get_data_ingestion_config(self) -> DataIngestionConfig:
-        """Get data ingestion configuration.
-        
-        Returns:
-            DataIngestionConfig instance
-        """
+        """Get data ingestion configuration."""
         config = self.config.data_ingestion
-        
-        # Create root directory
         create_directories([Path(config.root_dir)])
         
         return DataIngestionConfig(
@@ -39,4 +37,36 @@ class ConfigurationManager:
             config_name=config.config_name,
             split=config.split,
             max_samples=config.get('max_samples')
+        )
+    
+    def get_data_validation_config(self) -> DataValidationConfig:
+        """Get data validation configuration."""
+        config = self.config.data_validation
+        create_directories([Path(config.root_dir)])
+        
+        return DataValidationConfig(
+            root_dir=Path(config.root_dir),
+            status_file=Path(config.status_file),
+            data_dir=Path(config.data_dir),
+            required_columns=config.required_columns,
+            min_samples=config.min_samples
+        )
+    
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        """Get data transformation configuration.
+        
+        Returns:
+            DataTransformationConfig instance
+        """
+        config = self.config.data_transformation
+        create_directories([Path(config.root_dir)])
+        
+        return DataTransformationConfig(
+            root_dir=Path(config.root_dir),
+            data_dir=Path(config.data_dir),
+            tokenizer_name=config.tokenizer_name,
+            max_input_length=config.max_input_length,
+            max_target_length=config.max_target_length,
+            padding=config.padding,
+            batch_size=config.batch_size
         )
