@@ -10,7 +10,8 @@ from textSummarizer.entity.config_entity import (
     DataIngestionConfig,
     DataValidationConfig,
     DataTransformationConfig,
-    ModelTrainerConfig
+    ModelTrainerConfig,
+    ModelEvaluationConfig
 )
 
 
@@ -75,11 +76,7 @@ class ConfigurationManager:
         )
     
     def get_model_trainer_config(self) -> ModelTrainerConfig:
-        """Get model trainer configuration.
-        
-        Returns:
-            ModelTrainerConfig instance
-        """
+        """Get model trainer configuration."""
         config = self.config.model_trainer
         create_directories([Path(config.root_dir)])
         
@@ -90,4 +87,23 @@ class ConfigurationManager:
             model_name=config.model_name,
             train_split=config.train_split,
             seed=config.seed
+        )
+    
+    def get_model_evaluation_config(self) -> ModelEvaluationConfig:
+        """Get model evaluation configuration.
+        
+        Returns:
+            ModelEvaluationConfig instance
+        """
+        config = self.config.model_evaluation
+        create_directories([Path(config.root_dir)])
+        
+        return ModelEvaluationConfig(
+            root_dir=Path(config.root_dir),
+            data_dir=Path(config.data_dir),
+            model_dir=Path(config.model_dir),
+            tokenizer_dir=Path(config.tokenizer_dir),
+            metric_file=Path(config.metric_file),
+            report_file=Path(config.report_file),
+            predictions_file=Path(config.predictions_file)
         )

@@ -3,47 +3,30 @@
 # ============================================================================
 TrainingArguments:
   output_dir: artifacts/model_trainer/checkpoints
-
-  # Epochs - How many times to go through entire dataset
-  num_train_epochs: 1  # Start with 3, increase if underfitting
-
-  # Batch Sizes - Samples per forward/backward pass
-  per_device_train_batch_size: 2  # 4, Reduce if OOM (Out of Memory)
-  per_device_eval_batch_size: 4   # Can be higher than train
-
-  # Warmup - Gradual LR increase at start
-  warmup_steps: 500  # Stabilizes early training
-  
-  # Weight Decay - Regularization, Prevents overfitting
-  weight_decay: 0.01 
-
+  num_train_epochs: 3   # Epochs - How many times to go through entire dataset
+  per_device_train_batch_size: 4    # Batch Sizes - Samples per forward/backward pass
+  per_device_eval_batch_size: 4
+  warmup_steps: 500   # Warmup - Gradual LR increase at start (Stabilizes early training)
+  weight_decay: 0.01    # Weight Decay - Regularization, Prevents overfitting
   logging_steps: 100
   eval_strategy: steps
   eval_steps: 500
-  save_steps: 1000    # Save every 1000 steps
-  save_total_limit: 2   # Save every 1000 steps
-
-  # Learning Rate - How fast to update weights
-  learning_rate: 5.0e-5  # Good default for fine-tuning
-
-  # Gradient Accumulation - Simulate larger batches
-  gradient_accumulation_steps: 8  # 4, Effective batch = 4 * 4 = 16
-
-  # Requires GPU with Tensor Cores (T4, V100, A100)
-  fp16: false # true  # Set false if no GPU or older GPU
-  
-  # Generation Settings - For seq2seq models
+  save_steps: 1000
+  save_total_limit: 2
+  learning_rate: 5.0e-5   # Learning Rate - How fast to update weights
+  gradient_accumulation_steps: 4
+  fp16: true    # Requires GPU with Tensor Cores (T4, V100, A100) Set false if no GPU or older GPU
   predict_with_generate: true
-  generation_max_length: 128  # Match transformation max_target_length
-
-  load_best_model_at_end: true    # Load best, not last
+  generation_max_length: 128
+  load_best_model_at_end: true
   metric_for_best_model: rouge1
   greater_is_better: true
 
-
-# First run - quick test (max_samples: 100, num_train_epochs: 1) 
-
-# Second run - small (dataset max_samples: 10000, num_train_epochs: 2) 
-
-# Production run - full dataset (max_samples: null, num_train_epochs: 3)
-
+EvaluationArguments:
+  batch_size: 8
+  max_samples: 1000  # Number of test samples to evaluate (null for all)
+  num_beams: 4  # Beam search for better summaries
+  max_length: 128
+  min_length: 30
+  length_penalty: 2.0
+  no_repeat_ngram_size: 3

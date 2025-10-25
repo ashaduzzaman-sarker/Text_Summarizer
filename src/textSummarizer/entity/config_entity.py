@@ -50,3 +50,14 @@ class ModelTrainerConfig:
     model_name: str
     train_split: float
     seed: int
+
+@dataclass(frozen=True)
+class ModelEvaluationConfig:
+    """Configuration for model evaluation stage."""
+    root_dir: Path
+    data_dir: Path
+    model_dir: Path
+    tokenizer_dir: Path
+    metric_file: Path
+    report_file: Path
+    predictions_file: Path

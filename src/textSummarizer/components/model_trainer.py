@@ -83,6 +83,9 @@ class ModelTrainer:
             self.model = AutoModelForSeq2SeqLM.from_pretrained(
                 self.config.model_name
             )
+
+            import warnings
+            warnings.filterwarnings('ignore', category=UserWarning, message='Moving the following attributes')
             
             logger.info("Model and tokenizer loaded successfully")
             return self.model, self.tokenizer
@@ -151,7 +154,7 @@ class ModelTrainer:
                 args=training_args,
                 train_dataset=self.dataset['train'],
                 eval_dataset=self.dataset['validation'],
-                tokenizer=self.tokenizer,
+                processing_class=self.tokenizer,
                 data_collator=data_collator
             )
             

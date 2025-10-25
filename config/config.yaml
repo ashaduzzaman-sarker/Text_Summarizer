@@ -1,7 +1,6 @@
 # ============================================================================
 # config/config.yaml
 # ============================================================================
-
 artifacts_root: artifacts
 
 data_ingestion:
@@ -10,7 +9,7 @@ data_ingestion:
   dataset_name: abisee/cnn_dailymail
   config_name: "3.0.0" # null | Optional: for datasets with multiple configs
   split: train
-  max_samples: 10 # null  # Set to number (e.g., 100) for testing with subset
+  max_samples: 1000 # null  # Set to number (e.g., 100) for testing with subset
   # hf_streaming: false  # Set true for large datasets
 
 data_validation:
@@ -18,7 +17,7 @@ data_validation:
   status_file: artifacts/data_validation/status.txt
   data_dir: artifacts/data_ingestion/dataset  # Where ingested data is stored
   required_columns: ["article", "highlights"]  # Required dataset columns
-  min_samples: 100  # 1000, Minimum number of samples expected
+  min_samples: 1000  # 1000, Minimum number of samples expected
 
 data_transformation:
   root_dir: artifacts/data_transformation
@@ -36,3 +35,12 @@ model_trainer:
   model_name: facebook/bart-large-cnn
   train_split: 0.9  # 90% train, 10% validation
   seed: 42
+
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  data_dir: artifacts/data_transformation/tokenized_dataset
+  model_dir: artifacts/model_trainer/final_model
+  tokenizer_dir: artifacts/model_trainer/final_model
+  metric_file: artifacts/model_evaluation/metrics.json
+  report_file: artifacts/model_evaluation/evaluation_report.txt
+  predictions_file: artifacts/model_evaluation/predictions.csv
