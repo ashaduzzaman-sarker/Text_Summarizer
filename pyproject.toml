@@ -23,7 +23,6 @@ dependencies = [
     "sacrebleu",
     "huggingface_hub[hf_xet]",
     "requests",
-    "kaggle",
     "pyarrow",
     "rouge_score",
     "py7zr",

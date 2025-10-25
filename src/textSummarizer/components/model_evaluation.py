@@ -147,7 +147,8 @@ class ModelEvaluation:
                         max_length=self.params.max_length,
                         min_length=self.params.min_length,
                         length_penalty=self.params.length_penalty,
-                        no_repeat_ngram_size=self.params.no_repeat_ngram_size
+                        no_repeat_ngram_size=self.params.no_repeat_ngram_size,
+                        early_stopping=self.params.early_stopping
                     )
                 
                 # Decode predictions
