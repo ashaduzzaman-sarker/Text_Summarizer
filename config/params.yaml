@@ -30,4 +30,4 @@ EvaluationArguments:
   min_length: 30
   length_penalty: 2.0
   no_repeat_ngram_size: 3
-  early_stopping: True
+  early_stopping: true
