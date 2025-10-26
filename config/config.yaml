@@ -17,7 +17,7 @@ data_validation:
   status_file: artifacts/data_validation/status.txt
   data_dir: artifacts/data_ingestion/dataset  # Where ingested data is stored
   required_columns: ["article", "highlights"]  # Required dataset columns
-  min_samples: 1000  # 1000, Minimum number of samples expected
+  min_samples: 10000  # 1000, Minimum number of samples expected
 
 data_transformation:
   root_dir: artifacts/data_transformation
@@ -26,7 +26,7 @@ data_transformation:
   max_input_length: 1024  # Max tokens for article
   max_target_length: 128  # Max tokens for summary
   padding: max_length  # Padding strategy: max_length, longest, do_not_pad
-  batch_size: 1000  # 1000 Batch size for map operations
+  batch_size: 100  # 1000 Batch size for map operations
 
 model_trainer:
   root_dir: artifacts/model_trainer
