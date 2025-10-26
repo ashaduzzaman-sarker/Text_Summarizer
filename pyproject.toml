@@ -26,6 +26,7 @@ dependencies = [
         "sentencepiece",
         "evaluate",
         "rouge-score",
+        "bert-score",
         "sacrebleu",
         "torch",
         "torchvision",

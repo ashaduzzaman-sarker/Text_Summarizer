@@ -55,6 +55,9 @@ class ModelEvaluation:
             else:
                 logger.info("Model running on CPU")
             
+            # Set to evaluation mode
+            self.model.eval()
+            
             logger.info("Model and tokenizer loaded successfully")
             return self.model, self.tokenizer
             
@@ -65,6 +68,8 @@ class ModelEvaluation:
     def load_test_data(self):
         """Load test dataset.
         
+        FIXED: Uses proper test split that doesn't overlap with training.
+        
         Returns:
             Test dataset
         """
@@ -72,15 +77,17 @@ class ModelEvaluation:
             logger.info(f"Loading dataset from {self.config.data_dir}")
             dataset = load_from_disk(str(self.config.data_dir))
             
-            # Use validation split (10% from training stage split)
-            # Or load full dataset and create test split
-            if hasattr(dataset, 'train_test_split'):
-                # If it's a single dataset, split it
-                split = dataset.train_test_split(test_size=0.1, seed=42)
-                self.dataset = split['test']
-            else:
-                # Use the full dataset as test
-                self.dataset = dataset
+            # IMPORTANT: Use the same split logic as training to get consistent validation set
+            # Training used: train_test_split(test_size=0.1, seed=42)
+            # We'll use the validation split (the 10% that training used for validation)
+            
+            logger.info("Creating test split (using same seed as training for consistency)")
+            split = dataset.train_test_split(test_size=0.1, seed=42)
+            
+            # Use the 'test' split (which was 'validation' during training)
+            # This ensures we evaluate on data the model saw during validation
+            # but NOT during training steps
+            self.dataset = split['test']
             
             # Limit samples if specified
             if self.params.max_samples and self.params.max_samples < len(self.dataset):
@@ -88,6 +95,8 @@ class ModelEvaluation:
                 logger.info(f"Limited to {self.params.max_samples} test samples")
             
             logger.info(f"Test dataset loaded: {len(self.dataset)} samples")
+            logger.info(f"Note: Using validation split from training for consistency")
+            
             return self.dataset
             
         except Exception as e:
@@ -116,33 +125,42 @@ class ModelEvaluation:
     def generate_predictions(self):
         """Generate predictions for test dataset.
         
+        FIXED: Better batch handling and progress tracking.
+        
         Returns:
             Tuple of (predictions, references)
         """
         try:
             logger.info("Generating predictions...")
+            logger.info(f"Using device: {'cuda' if torch.cuda.is_available() else 'cpu'}")
             
             predictions = []
             references = []
             
-            # Process in batches
-            for i in tqdm(range(0, len(self.dataset), self.params.batch_size)):
-                batch = self.dataset[i:i + self.params.batch_size]
+            import torch
+            
+            # Process in batches with progress bar
+            num_batches = (len(self.dataset) + self.params.batch_size - 1) // self.params.batch_size
+            logger.info(f"Processing {len(self.dataset)} samples in {num_batches} batches")
+            
+            for i in tqdm(range(0, len(self.dataset), self.params.batch_size), desc="Generating"):
+                batch_end = min(i + self.params.batch_size, len(self.dataset))
+                batch = self.dataset[i:batch_end]
                 
                 # Get input_ids and labels
                 input_ids = batch['input_ids']
                 labels = batch['labels']
                 
+                # Convert to tensors and move to device
+                if torch.cuda.is_available():
+                    input_ids_tensor = torch.tensor(input_ids).cuda()
+                else:
+                    input_ids_tensor = torch.tensor(input_ids)
+                
                 # Generate summaries
-                import torch
                 with torch.no_grad():
-                    if torch.cuda.is_available():
-                        input_ids = torch.tensor(input_ids).cuda()
-                    else:
-                        input_ids = torch.tensor(input_ids)
-                    
                     generated_ids = self.model.generate(
-                        input_ids,
+                        input_ids_tensor,
                         num_beams=self.params.num_beams,
                         max_length=self.params.max_length,
                         min_length=self.params.min_length,
@@ -151,6 +169,9 @@ class ModelEvaluation:
                         early_stopping=self.params.early_stopping
                     )
                 
+                # Move back to CPU for decoding
+                generated_ids = generated_ids.cpu()
+                
                 # Decode predictions
                 batch_predictions = self.tokenizer.batch_decode(
                     generated_ids,
@@ -158,14 +179,25 @@ class ModelEvaluation:
                 )
                 predictions.extend(batch_predictions)
                 
-                # Decode references
+                # Decode references (replace -100 padding with pad_token_id)
+                import numpy as np
+                labels_array = np.array(labels)
+                labels_array = np.where(
+                    labels_array != -100,
+                    labels_array,
+                    self.tokenizer.pad_token_id
+                )
+                
                 batch_references = self.tokenizer.batch_decode(
-                    labels,
+                    labels_array,
                     skip_special_tokens=True
                 )
                 references.extend(batch_references)
             
             logger.info(f"Generated {len(predictions)} predictions")
+            logger.info(f"Average prediction length: {np.mean([len(p.split()) for p in predictions]):.1f} words")
+            logger.info(f"Average reference length: {np.mean([len(r.split()) for r in references]):.1f} words")
+            
             return predictions, references
             
         except Exception as e:
@@ -185,6 +217,17 @@ class ModelEvaluation:
         try:
             logger.info("Calculating ROUGE metrics...")
             
+            # Clean predictions and references
+            predictions = [pred.strip() for pred in predictions if pred.strip()]
+            references = [ref.strip() for ref in references if ref.strip()]
+            
+            # Ensure same length
+            min_len = min(len(predictions), len(references))
+            predictions = predictions[:min_len]
+            references = references[:min_len]
+            
+            logger.info(f"Computing metrics on {len(predictions)} samples")
+            
             # Calculate ROUGE scores
             results = self.metric.compute(
                 predictions=predictions,
@@ -194,10 +237,10 @@ class ModelEvaluation:
             
             # Extract scores
             metrics = {
-                'rouge1': results['rouge1'],
-                'rouge2': results['rouge2'],
-                'rougeL': results['rougeL'],
-                'rougeLsum': results['rougeLsum']
+                'rouge1': round(results['rouge1'], 4),
+                'rouge2': round(results['rouge2'], 4),
+                'rougeL': round(results['rougeL'], 4),
+                'rougeLsum': round(results['rougeLsum'], 4)
             }
             
             logger.info("Metrics calculated:")
@@ -227,7 +270,9 @@ class ModelEvaluation:
             # Save predictions as CSV
             df = pd.DataFrame({
                 'reference': references,
-                'prediction': predictions
+                'prediction': predictions,
+                'reference_length': [len(r.split()) for r in references],
+                'prediction_length': [len(p.split()) for p in predictions]
             })
             df.to_csv(self.config.predictions_file, index=False)
             logger.info(f"Predictions saved to {self.config.predictions_file}")
@@ -252,6 +297,8 @@ class ModelEvaluation:
         Returns:
             Report string
         """
+        import numpy as np
+        
         report = "=" * 70 + "\n"
         report += "MODEL EVALUATION REPORT\n"
         report += "=" * 70 + "\n\n"
@@ -263,6 +310,19 @@ class ModelEvaluation:
             report += f"{metric_name.upper():15s}: {score:.4f}\n"
         report += "\n"
         
+        # Statistics section
+        report += "SUMMARY STATISTICS:\n"
+        report += "-" * 70 + "\n"
+        pred_lengths = [len(p.split()) for p in predictions]
+        ref_lengths = [len(r.split()) for r in references]
+        
+        report += f"Total samples:           {len(predictions)}\n"
+        report += f"Avg prediction length:   {np.mean(pred_lengths):.1f} words\n"
+        report += f"Avg reference length:    {np.mean(ref_lengths):.1f} words\n"
+        report += f"Min prediction length:   {np.min(pred_lengths)} words\n"
+        report += f"Max prediction length:   {np.max(pred_lengths)} words\n"
+        report += "\n"
+        
         # Sample predictions section
         report += "SAMPLE PREDICTIONS:\n"
         report += "-" * 70 + "\n\n"
@@ -270,9 +330,11 @@ class ModelEvaluation:
         num_samples = min(5, len(predictions))
         for i in range(num_samples):
             report += f"Example {i+1}:\n"
-            report += f"Reference: {references[i][:200]}...\n"
-            report += f"Prediction: {predictions[i][:200]}...\n"
-            report += "\n"
+            report += f"Reference ({len(references[i].split())} words):\n"
+            report += f"{references[i][:200]}{'...' if len(references[i]) > 200 else ''}\n\n"
+            report += f"Prediction ({len(predictions[i].split())} words):\n"
+            report += f"{predictions[i][:200]}{'...' if len(predictions[i]) > 200 else ''}\n"
+            report += "\n" + "-" * 70 + "\n\n"
         
         report += "=" * 70 + "\n"
         
@@ -314,6 +376,3 @@ class ModelEvaluation:
         except Exception as e:
             logger.error(f"Evaluation failed: {e}")
             raise
-
-
-

@@ -10,7 +10,7 @@ TrainingArguments:
   weight_decay: 0.01    # Weight Decay - Regularization, Prevents overfitting
   logging_steps: 100
   eval_strategy: steps
-  eval_steps: 500
+  eval_steps: 500     # 250 (More frequent evaluation)
   save_steps: 1000
   save_total_limit: 2
   learning_rate: 5.0e-5   # Learning Rate - How fast to update weights
@@ -19,8 +19,8 @@ TrainingArguments:
   predict_with_generate: true
   generation_max_length: 128
   load_best_model_at_end: true
-  metric_for_best_model: rouge1
-  greater_is_better: true
+  metric_for_best_model: rouge1  # using ROUGE-1 (most reliable) (rouge2 - Better metric)
+  greater_is_better: true        # Higher ROUGE is better
 
 EvaluationArguments:
   batch_size: 8

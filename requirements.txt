@@ -12,6 +12,7 @@ sentencepiece
 evaluate
 rouge-score
 sacrebleu
+bert-score
 
 # ==============================
 # Deep Learning
