@@ -10,7 +10,6 @@ data_ingestion:
   config_name: "3.0.0"  # null | Optional: for datasets with multiple configs
   split: train
   max_samples: 10000    # null | Set to number (e.g., 100) for testing with subset
-  hf_streaming: true    # false | Set true for large datasets
 
 data_validation:
   root_dir: artifacts/data_validation

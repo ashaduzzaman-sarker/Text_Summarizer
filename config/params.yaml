@@ -3,7 +3,7 @@
 # ============================================================================
 TrainingArguments:
   output_dir: artifacts/model_trainer/checkpoints
-  num_train_epochs: 3   # Epochs - How many times to go through entire dataset
+  num_train_epochs: 1   # Epochs - How many times to go through entire dataset
   per_device_train_batch_size: 4    # Batch Sizes - Samples per forward/backward pass
   per_device_eval_batch_size: 4
   warmup_steps: 500   # Warmup - Gradual LR increase at start (Stabilizes early training)
