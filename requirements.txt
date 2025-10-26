@@ -1,59 +1,65 @@
+# ============================================================================
+# requirements.txt (Production Requirements)
+# ============================================================================
+
 # ==============================
-# Core NLP and Transformers
+# Core NLP & Transformers
 # ==============================
-transformers
 transformers[sentencepiece]
 datasets
-sacrebleu
-rouge_score
+tokenizers
 sentencepiece
-evaluate 
+evaluate
 rouge-score
-
-# ==============================
-# Data & Utilities
-# ==============================
-pandas
-numpy
-nltk
-tqdm
-PyYAML
-python-box
-ensure
-py7zr
-huggingface_hub[hf_xet]
-requests
-accelerate
-pyarrow
-
-# ==============================
-# Visualization
-# ==============================
-matplotlib
-seaborn
-tensorboard
+sacrebleu
 
 # ==============================
 # Deep Learning
 # ==============================
 torch
 torchvision
+accelerate
+
+# ==============================
+# Data Processing & Utilities
+# ==============================
+pandas
+numpy
+pyarrow
+nltk
+tqdm
+PyYAML
+python-box
+ensure
+py7zr
+
+# ==============================
+# Web & API (Deployment)
+# ==============================
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+gradio
+Jinja2
 
 # ==============================
 # Cloud & Storage
 # ==============================
+huggingface_hub
+requests
 boto3
 mypy-boto3-s3
 
 # ==============================
-# Web & Serving
+# Visualization & Monitoring
 # ==============================
-fastapi
-uvicorn
-Jinja2
+matplotlib
+seaborn
+tensorboard
 
 # ==============================
-# Experiment Tracking / MLOps
+# MLOps & Experiment Tracking
 # ==============================
 mlflow
 dvc
@@ -63,6 +69,7 @@ dvc[s3]
 # Development & Testing
 # ==============================
 pytest
+pytest-cov
 flake8
 black
 isort
@@ -70,6 +77,6 @@ mypy
 notebook
 
 # ==============================
-# Editable install (local dev mode)
+# Editable Install (Local Development)
 # ==============================
 -e .
