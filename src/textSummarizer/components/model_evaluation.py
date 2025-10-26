@@ -6,6 +6,7 @@
 import json
 import pandas as pd
 from pathlib import Path
+import torch
 from tqdm import tqdm
 from datasets import load_from_disk
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
@@ -48,7 +49,6 @@ class ModelEvaluation:
             )
             
             # Move model to GPU if available
-            import torch
             if torch.cuda.is_available():
                 self.model = self.model.cuda()
                 logger.info("Model moved to GPU")
@@ -136,8 +136,7 @@ class ModelEvaluation:
             
             predictions = []
             references = []
-            
-            import torch
+
             
             # Process in batches with progress bar
             num_batches = (len(self.dataset) + self.params.batch_size - 1) // self.params.batch_size
