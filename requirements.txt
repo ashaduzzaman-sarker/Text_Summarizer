@@ -43,6 +43,7 @@ pydantic
 python-multipart
 gradio
 Jinja2
+gunicorn
 
 # ==============================
 # Cloud & Storage
