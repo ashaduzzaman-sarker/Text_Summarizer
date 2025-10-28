@@ -1,0 +1,62 @@
+# ============================================================================
+# Files to exclude from Docker build context
+# ============================================================================
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs (except structure)
+logs/*.log
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Large artifacts (keep only final model)
+artifacts/data_ingestion/
+artifacts/data_validation/
+artifacts/data_transformation/
+artifacts/model_trainer/checkpoints/
+artifacts/model_trainer/logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml

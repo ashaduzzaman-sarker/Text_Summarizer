@@ -1,0 +1,55 @@
+# ============================================================================
+# Docker Compose - Multi-Service Setup
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # FastAPI Service - REST API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: summarizer-api
+    ports:
+      - "8000:8000"  # Map host:container
+    volumes:
+      - ./artifacts:/app/artifacts:ro  # Read-only model access
+      - ./logs:/app/logs               # Persistent logs
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - summarizer-net
+
+  # Gradio Service - Web UI
+  gradio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: summarizer-ui
+    command: python gradio_app.py
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+      - ./logs:/app/logs
+    environment:
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - summarizer-net
+
+networks:
+  summarizer-net:
+    driver: bridge

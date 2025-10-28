@@ -36,17 +36,16 @@ async def lifespan(app: FastAPI):
             predictor = None
         else:
             predictor = PredictionPipeline(model_path=model_path)
-            logger.info(f"✅ Prediction pipeline initialized on {predictor.device}")
+            logger.info(f"[SUCCESS] Prediction pipeline initialized on {predictor.device}")
             logger.info(f"Model loaded from: {model_path}")
     except Exception as e:
-        logger.error(f"❌ Failed to initialize pipeline: {e}")
+        logger.error(f"[FAILED] Failed to initialize pipeline: {e}")
         predictor = None
     
     yield
     
     # Shutdown
     logger.info("Shutting down API server...")
-
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(
