@@ -1,16 +1,16 @@
 # ============================================================================
 # src/textSummarizer/components/prediction.py
 # ============================================================================
-"""Prediction component for generating summaries from trained model."""
+"""Prediction component for text summarization inference."""
 
-import torch
 from pathlib import Path
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import torch
 from textSummarizer.logging.logger import logger
 
 
 class PredictionPipeline:
-    """Pipeline for generating summaries using trained model."""
+    """Handles model loading and text summarization prediction."""
     
     def __init__(self, model_path: str = "artifacts/model_trainer/final_model"):
         """Initialize prediction pipeline.
@@ -27,7 +27,7 @@ class PredictionPipeline:
         self._load_model()
     
     def _load_model(self):
-        """Load trained model and tokenizer."""
+        """Load model and tokenizer from disk."""
         try:
             logger.info(f"Loading model from {self.model_path}")
             
@@ -37,7 +37,7 @@ class PredictionPipeline:
             # Load model
             self.model = AutoModelForSeq2SeqLM.from_pretrained(str(self.model_path))
             self.model.to(self.device)
-            self.model.eval()
+            self.model.eval()  # Set to evaluation mode
             
             logger.info(f"Model loaded successfully on {self.device}")
             
@@ -52,6 +52,7 @@ class PredictionPipeline:
         min_length: int = 30,
         num_beams: int = 4,
         length_penalty: float = 2.0,
+        no_repeat_ngram_size: int = 3,
         early_stopping: bool = True
     ) -> str:
         """Generate summary for input text.
@@ -61,7 +62,8 @@ class PredictionPipeline:
             max_length: Maximum summary length
             min_length: Minimum summary length
             num_beams: Beam search width
-            length_penalty: Length penalty for generation
+            length_penalty: Length penalty for beam search
+            no_repeat_ngram_size: Prevent n-gram repetition
             early_stopping: Stop when all beams finish
             
         Returns:
@@ -89,21 +91,20 @@ class PredictionPipeline:
                     min_length=min_length,
                     num_beams=num_beams,
                     length_penalty=length_penalty,
-                    early_stopping=early_stopping,
-                    no_repeat_ngram_size=3
+                    no_repeat_ngram_size=no_repeat_ngram_size,
+                    early_stopping=early_stopping
                 )
             
             # Decode summary
             summary = self.tokenizer.decode(
                 summary_ids[0],
-                skip_special_tokens=True
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=True
             )
             
+            logger.info(f"Generated summary: {len(summary)} chars")
             return summary
             
         except Exception as e:
             logger.error(f"Prediction failed: {e}")
             raise
-
-
-        
