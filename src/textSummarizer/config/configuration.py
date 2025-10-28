@@ -3,9 +3,11 @@
 # ============================================================================
 """Configuration management."""
 
+import torch
 from pathlib import Path
 from textSummarizer.constants.constants import CONFIG_FILE_PATH, PARAMS_FILE_PATH
 from textSummarizer.utils.common import read_yaml, create_directories
+from textSummarizer.logging.logger import logger
 from textSummarizer.entity.config_entity import (
     DataIngestionConfig,
     DataValidationConfig,
@@ -58,7 +60,7 @@ class ConfigurationManager:
         except Exception as e:
             logger.error(f"Configuration validation failed: {e}")
             raise
-            
+
     def get_data_ingestion_config(self) -> DataIngestionConfig:
         """Get data ingestion configuration."""
         config = self.config.data_ingestion

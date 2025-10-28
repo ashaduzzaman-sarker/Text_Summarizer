@@ -9,7 +9,7 @@ data_ingestion:
   dataset_name: abisee/cnn_dailymail
   config_name: "3.0.0"  # null | Optional: for datasets with multiple configs
   split: train
-  max_samples: 1000    # null(full dataset) | Set to number (e.g., 100) for testing with subset
+  max_samples: 10000    # null(full dataset) | Set to number (e.g., 100) for testing with subset
 
 data_validation:
   root_dir: artifacts/data_validation
