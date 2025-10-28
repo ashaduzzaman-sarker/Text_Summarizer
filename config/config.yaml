@@ -16,7 +16,7 @@ data_validation:
   status_file: artifacts/data_validation/status.txt
   data_dir: artifacts/data_ingestion/dataset  # Where ingested data is stored
   required_columns: ["article", "highlights"]  # Required dataset columns
-  min_samples: 100  # 1000, Minimum number of samples expected
+  min_samples: 1000  # 1000, Minimum number of samples expected
 
 data_transformation:
   root_dir: artifacts/data_transformation
