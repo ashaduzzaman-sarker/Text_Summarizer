@@ -6,6 +6,7 @@
 import numpy as np
 from pathlib import Path
 from datasets import load_from_disk, DatasetDict
+from transformers.trainer_callback import EarlyStoppingCallback
 from transformers import (
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
@@ -243,7 +244,8 @@ class ModelTrainer:
                 model=self.model
             )
             
-            # Initialize Trainer with compute_metrics
+
+            # Initialize Trainer with compute_metrics and early stopping
             trainer = Seq2SeqTrainer(
                 model=self.model,
                 args=training_args,
@@ -251,7 +253,8 @@ class ModelTrainer:
                 eval_dataset=self.dataset['validation'],
                 processing_class=self.tokenizer,
                 data_collator=data_collator,
-                compute_metrics=self.compute_metrics  # ← Add metrics computation
+                compute_metrics=self.compute_metrics,
+                callbacks=[EarlyStoppingCallback(early_stopping_patience=3)]  # Stop if no improvement for 3 evals
             )
             
             # Train

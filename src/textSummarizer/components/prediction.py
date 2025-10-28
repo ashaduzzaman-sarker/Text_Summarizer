@@ -53,7 +53,8 @@ class PredictionPipeline:
         num_beams: int = 4,
         length_penalty: float = 2.0,
         no_repeat_ngram_size: int = 3,
-        early_stopping: bool = True
+        early_stopping: bool = True,
+        use_cache: bool = True  # Enable KV cache for faster generation
     ) -> str:
         """Generate summary for input text.
         
@@ -65,6 +66,7 @@ class PredictionPipeline:
             length_penalty: Length penalty for beam search
             no_repeat_ngram_size: Prevent n-gram repetition
             early_stopping: Stop when all beams finish
+            use_cache: Use key-value cache for faster generation
             
         Returns:
             Generated summary text
@@ -82,7 +84,7 @@ class PredictionPipeline:
             # Move to device
             inputs = {k: v.to(self.device) for k, v in inputs.items()}
             
-            # Generate summary
+            # Generate summary with caching
             with torch.no_grad():
                 summary_ids = self.model.generate(
                     inputs["input_ids"],
@@ -92,7 +94,8 @@ class PredictionPipeline:
                     num_beams=num_beams,
                     length_penalty=length_penalty,
                     no_repeat_ngram_size=no_repeat_ngram_size,
-                    early_stopping=early_stopping
+                    early_stopping=early_stopping,
+                    use_cache=use_cache  # Enable KV cache
                 )
             
             # Decode summary

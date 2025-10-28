@@ -15,7 +15,7 @@ TrainingArguments:
   save_total_limit: 2
   learning_rate: 5.0e-5   # Learning Rate - How fast to update weights
   gradient_accumulation_steps: 4
-  fp16: true    # Requires GPU with Tensor Cores (T4, V100, A100), Set false if no GPU or older GPU
+  fp16: false    # Requires GPU with Tensor Cores (T4, V100, A100), Set false if no GPU or older GPU
   predict_with_generate: true
   generation_max_length: 128
   load_best_model_at_end: true

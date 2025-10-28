@@ -68,41 +68,74 @@ class ModelEvaluation:
     def load_test_data(self):
         """Load test dataset.
         
-        FIXED: Uses proper test split that doesn't overlap with training.
+        Uses a separate test split from CNN/DailyMail to avoid data leakage.
         
         Returns:
             Test dataset
         """
         try:
-            logger.info(f"Loading dataset from {self.config.data_dir}")
-            dataset = load_from_disk(str(self.config.data_dir))
+            from datasets import load_dataset
             
-            # IMPORTANT: Use the same split logic as training to get consistent validation set
-            # Training used: train_test_split(test_size=0.1, seed=42)
-            # We'll use the validation split (the 10% that training used for validation)
+            logger.info("Loading fresh test split from CNN/DailyMail")
             
-            logger.info("Creating test split (using same seed as training for consistency)")
-            split = dataset.train_test_split(test_size=0.1, seed=42)
-            
-            # Use the 'test' split (which was 'validation' during training)
-            # This ensures we evaluate on data the model saw during validation
-            # but NOT during training steps
-            self.dataset = split['test']
+            # Load the actual test split from the dataset
+            # This ensures we evaluate on data never seen during training
+            test_dataset = load_dataset(
+                "abisee/cnn_dailymail",
+                "3.0.0",
+                split="test",  # Use official test split
+                cache_dir="artifacts/data_ingestion/cache"
+            )
             
             # Limit samples if specified
-            if self.params.max_samples and self.params.max_samples < len(self.dataset):
-                self.dataset = self.dataset.select(range(self.params.max_samples))
+            if self.params.max_samples and self.params.max_samples < len(test_dataset):
+                test_dataset = test_dataset.select(range(self.params.max_samples))
                 logger.info(f"Limited to {self.params.max_samples} test samples")
             
+            # Load tokenizer
+            logger.info(f"Loading tokenizer from {self.config.tokenizer_dir}")
+            tokenizer = AutoTokenizer.from_pretrained(str(self.config.tokenizer_dir))
+            
+            # Tokenize test data
+            logger.info("Tokenizing test data...")
+            def preprocess_function(examples):
+                inputs = [doc for doc in examples["article"]]
+                model_inputs = tokenizer(
+                    inputs,
+                    max_length=1024,
+                    padding="max_length",
+                    truncation=True
+                )
+                
+                targets = [summary for summary in examples["highlights"]]
+                labels = tokenizer(
+                    targets,
+                    max_length=128,
+                    padding="max_length",
+                    truncation=True
+                )
+                
+                model_inputs["labels"] = labels["input_ids"]
+                return model_inputs
+            
+            self.dataset = test_dataset.map(
+                preprocess_function,
+                batched=True,
+                batch_size=100,
+                remove_columns=test_dataset.column_names,
+                desc="Tokenizing test data"
+            )
+            
             logger.info(f"Test dataset loaded: {len(self.dataset)} samples")
-            logger.info(f"Note: Using validation split from training for consistency")
+            logger.info("Using official test split - no data leakage")
             
             return self.dataset
             
         except Exception as e:
             logger.error(f"Failed to load test data: {e}")
             raise
-    
+
+
     def load_rouge_metric(self):
         """Load ROUGE metric.
         

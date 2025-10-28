@@ -32,7 +32,33 @@ class ConfigurationManager:
         self.config = read_yaml(config_path)
         self.params = read_yaml(params_path)
         create_directories([Path(self.config.artifacts_root)])
+        self.validate_config()
     
+    def validate_config(self):
+        """Validate configuration parameters."""
+        try:
+            # Check if model paths exist after training
+            model_path = Path(self.config.model_trainer.root_dir) / "final_model"
+            
+            # Validate training parameters
+            if self.params.TrainingArguments.num_train_epochs < 1:
+                raise ValueError("num_train_epochs must be >= 1")
+            
+            if self.params.TrainingArguments.per_device_train_batch_size < 1:
+                raise ValueError("Batch size must be >= 1")
+            
+            # Validate FP16 availability
+            if self.params.TrainingArguments.fp16:
+                if not torch.cuda.is_available():
+                    logger.warning("FP16 enabled but CUDA not available - will use FP32")
+                    self.params.TrainingArguments.fp16 = False
+            
+            logger.info("Configuration validation passed")
+            
+        except Exception as e:
+            logger.error(f"Configuration validation failed: {e}")
+            raise
+            
     def get_data_ingestion_config(self) -> DataIngestionConfig:
         """Get data ingestion configuration."""
         config = self.config.data_ingestion
