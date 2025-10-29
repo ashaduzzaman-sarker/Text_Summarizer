@@ -1,11 +1,6 @@
-# ============================================================================
-# Docker Compose - Multi-Service Setup
-# ============================================================================
-
 version: '3.8'
 
 services:
-  # FastAPI Service - REST API
   api:
     build:
       context: .
@@ -29,7 +24,6 @@ services:
     networks:
       - summarizer-net
 
-  # Gradio Service - Web UI
   gradio:
     build:
       context: .

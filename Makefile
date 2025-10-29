@@ -1,10 +1,6 @@
-# ============================================================================
-# Makefile - Quick Commands
-# ============================================================================
-
 .PHONY: help install test docker clean
 
-help:  ## Show this help message
+help:
 	@echo "Available commands:"
 	@echo "  make install       - Install all dependencies"
 	@echo "  make test          - Run tests"
@@ -17,39 +13,39 @@ help:  ## Show this help message
 	@echo "  make run-ui        - Run Gradio UI locally"
 	@echo "  make clean         - Clean temporary files"
 
-install:  ## Install dependencies
+install: 
 	pip install -r requirements.txt
 	pip install -r requirements-test.txt
 	pip install -e .
 
-test:  ## Run tests
+test: 
 	pytest tests/ -v
 
-test-cov:  ## Run tests with coverage
+test-cov:  
 	pytest tests/ -v --cov=src --cov-report=html --cov-report=term
 	@echo "\nCoverage report: htmlcov/index.html"
 
-docker-build:  ## Build Docker images
+docker-build: 
 	docker-compose build
 
-docker-up:  ## Start Docker containers
+docker-up: 
 	docker-compose up -d
 	@echo "\nAPI: http://localhost:8000"
 	@echo "UI:  http://localhost:7860"
 
-docker-down:  ## Stop Docker containers
+docker-down: 
 	docker-compose down
 
-docker-logs:  ## Show container logs
+docker-logs: 
 	docker-compose logs -f
 
-run-api:  ## Run API locally
+run-api:  
 	python app.py
 
-run-ui:  ## Run Gradio UI locally
+run-ui:  
 	python gradio_app.py
 
-clean:  ## Clean temporary files
+clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true

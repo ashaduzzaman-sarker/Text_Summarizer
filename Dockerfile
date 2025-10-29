@@ -1,7 +1,3 @@
-# ============================================================================
-# Production-Ready Dockerfile for Text Summarization API
-# ============================================================================
-
 # Base image - Python 3.10 slim (smaller size)
 FROM python:3.10-slim
 
