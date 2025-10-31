@@ -1,6 +1,16 @@
 # Base image - Python 3.10 slim (smaller size)
 FROM python:3.10-slim
 
+# Build arguments
+ARG BUILD_DATE
+ARG VCS_REF
+
+# Labels
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.revision=$VCS_REF \
+      org.opencontainers.image.title="Text Summarizer API" \
+      org.opencontainers.image.description="BART-based text summarization"
+      
 # Set working directory inside container
 WORKDIR /app
 

@@ -1,56 +1,233 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+      - '*.md'
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PYTHON_VERSION: '3.10'
+  AWS_REGION: ${{ secrets.AWS_REGION }}
 
 jobs:
-  test:
-    name: Run Tests
+  continuous-integration:
+    name: Test & Validate
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-test.txt
-        pip install -e .
-    
-    - name: Run tests with coverage
-      run: |
-        pytest tests/ -v --cov=src --cov-report=xml
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+          pip install -e .
+      
+      - name: Lint Code with Flake8
+        run: |
+          pip install flake8
+          # Stop build if there are Python syntax errors or undefined names
+          flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings
+          flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        continue-on-error: true
+      
+      - name: Run Unit Tests
+        run: |
+          pytest tests/ -v --tb=short
+      
+      - name: Run Tests with Coverage
+        run: |
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
+      
+      - name: Upload Coverage Reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+      
+      - name: Validate Docker Build
+        run: |
+          docker build -t test-build:latest .
+          echo "✅ Docker build successful"
 
-  docker:
-    name: Build Docker Image
+  continuous-delivery:
+    name: Build & Push to ECR
+    needs: continuous-integration
     runs-on: ubuntu-latest
-    needs: test
+    
+    outputs:
+      image-uri: ${{ steps.build-image.outputs.image }}
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Install Utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq unzip curl
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Build, Tag, and Push Image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "🔨 Building Docker image..."
+          
+          # Build Docker image with multiple tags
+          docker build \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+            --build-arg VCS_REF=${{ github.sha }} \
+            .
+          
+          echo "📤 Pushing images to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "✅ Images pushed successfully"
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+      
+      - name: Scan Image for Vulnerabilities
+        continue-on-error: true
+        run: |
+          # Install Trivy scanner
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install trivy
+          
+          # Scan image
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY=${{ secrets.ECR_REPOSITORY_NAME }}
+          trivy image --severity HIGH,CRITICAL $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+  continuous-deployment:
+    name: Deploy to EC2
+    needs: continuous-delivery
+    runs-on: self-hosted
     
-    - name: Build Docker image
-      run: docker build -t text-summarizer:latest .
-    
-    - name: Test Docker image
-      run: |
-        docker run -d -p 8000:8000 --name test-api text-summarizer:latest
-        sleep 15
-        curl -f http://localhost:8000/health || exit 1
-        docker stop test-api
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Pull Latest Image from ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+        run: |
+          echo "📥 Pulling latest image..."
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "✅ Image pulled successfully"
+      
+      - name: Stop and Remove Old Container
+        continue-on-error: true
+        run: |
+          echo "🛑 Stopping old container..."
+          if [ $(docker ps -q -f name=text-summarizer) ]; then
+            docker stop text-summarizer
+            echo "Container stopped"
+          fi
+          
+          if [ $(docker ps -aq -f name=text-summarizer) ]; then
+            docker rm text-summarizer
+            echo "Container removed"
+          fi
+      
+      - name: Run New Container
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+        run: |
+          echo "🚀 Starting new container..."
+          docker run -d \
+            --name text-summarizer \
+            -p 8080:8000 \
+            --restart unless-stopped \
+            -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            -e AWS_REGION=${{ secrets.AWS_REGION }} \
+            -e LOG_LEVEL=INFO \
+            -v /opt/summarizer/logs:/app/logs \
+            $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          echo "✅ Container started successfully"
+      
+      - name: Health Check
+        run: |
+          echo "🏥 Performing health check..."
+          sleep 10
+          
+          # Retry health check up to 5 times
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/health; then
+              echo "✅ Health check passed"
+              exit 0
+            fi
+            echo "⏳ Attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          
+          echo "❌ Health check failed"
+          exit 1
+      
+      - name: Clean Up Old Images
+        run: |
+          echo "🧹 Cleaning up old Docker images..."
+          docker image prune -af --filter "until=24h"
+          docker system prune -f --volumes
+          echo "✅ Cleanup complete"
+      
+      - name: Send Deployment Notification
+        if: success()
+        run: |
+          echo "📢 Deployment successful!"
+          echo "Service is running at: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):8080"
+
