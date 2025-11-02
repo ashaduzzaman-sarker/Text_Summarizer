@@ -3,6 +3,7 @@
 help:
 	@echo "Available commands:"
 	@echo "  make install       - Install all dependencies"
+	@echo "  make run       - Run all pipeline in main"
 	@echo "  make test          - Run tests"
 	@echo "  make test-cov      - Run tests with coverage report"
 	@echo "  make docker-build  - Build Docker images"
@@ -15,8 +16,10 @@ help:
 
 install: 
 	pip install -r requirements.txt
-	pip install -r requirements-test.txt
 	pip install -e .
+
+run:
+	python main.py
 
 test: 
 	pytest tests/ -v

@@ -1,5 +1,11 @@
+# Large artifacts (keep only final model)
+# artifacts/data_ingestion/
+# artifacts/data_validation/
+# artifacts/data_transformation/
+# artifacts/model_trainer/checkpoints/
+# artifacts/model_trainer/logs/
 artifacts/
-.gradio
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

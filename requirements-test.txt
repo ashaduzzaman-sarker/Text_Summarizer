@@ -1,5 +1,0 @@
-# Testing dependencies
-pytest
-pytest-cov          # Coverage reports
-pytest-asyncio      # Async test support
-httpx               # HTTP client for testing
