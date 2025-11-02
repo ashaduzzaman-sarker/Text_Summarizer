@@ -3,7 +3,7 @@
 help:
 	@echo "Available commands:"
 	@echo "  make install       - Install all dependencies"
-	@echo "  make run       - Run all pipeline in main"
+	@echo "  make run       	- Run all pipeline in main"
 	@echo "  make test          - Run tests"
 	@echo "  make test-cov      - Run tests with coverage report"
 	@echo "  make docker-build  - Build Docker images"
