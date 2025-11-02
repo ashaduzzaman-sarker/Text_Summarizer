@@ -3,7 +3,11 @@
 help:
 	@echo "Available commands:"
 	@echo "  make install       - Install all dependencies"
+<<<<<<< HEAD
 	@echo "  make run       - Run all pipeline in main"
+=======
+	@echo "  make main       	- Run all pipelines"
+>>>>>>> d5df56768730f6410db1a77abe77a0f635c0a716
 	@echo "  make test          - Run tests"
 	@echo "  make test-cov      - Run tests with coverage report"
 	@echo "  make docker-build  - Build Docker images"
@@ -18,7 +22,11 @@ install:
 	pip install -r requirements.txt
 	pip install -e .
 
+<<<<<<< HEAD
 run:
+=======
+main:
+>>>>>>> d5df56768730f6410db1a77abe77a0f635c0a716
 	python main.py
 
 test: 
